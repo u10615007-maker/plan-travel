@@ -320,7 +320,7 @@
     async function loadGlobalCloudData() {
       if (SINGLE_CLOUD_API_URL && !SINGLE_CLOUD_API_URL.includes('您的')) {
         try {
-          const res = await fetch(SINGLE_CLOUD_API_URL);
+          const res = await fetch(nocacheUrl, { cache: 'no-store' });
           if (res.ok) {
             const data = await res.json();
             if (data && data.trips && data.trips.length > 0) {
