@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>旅遊行程規劃</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif; margin:0; background:#f5f7fb; color:#222; }
+.container { max-width:900px; margin:0 auto; padding:24px 16px 60px; }
+h1 { text-align:center; margin:8px 0 24px; }
+.card { background:#fff; border-radius:14px; padding:18px; box-shadow:0 4px 14px rgba(0,0,0,.08); margin-bottom:18px; }
+.form-row { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
+input, button { padding:10px 12px; border:1px solid #d7dce5; border-radius:10px; font-size:15px; }
+input { flex:1 1 180px; }
+button { background:#2f6fed; color:#fff; border:none; cursor:pointer; }
+button:hover { background:#245bd0; }
+.spot-card { border:1px solid #e4e8f0; border-radius:12px; padding:14px; margin-bottom:10px; background:#fafbff; }
+.spot-header { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.spot-name { font-weight:700; font-size:17px; }
+.food-icon { font-size:17px; text-decoration:none; cursor:pointer; display:inline-block; transition:transform .15s ease; }
+.food-icon:hover { transform:scale(1.25); }
+.spot-meta { color:#667085; font-size:14px; margin-top:4px; }
+.empty { color:#7a8494; text-align:center; padding:20px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🧳 旅遊行程規劃</h1>
+<div class="card">
+<h2>新增景點</h2>
+<div class="form-row">
+<input id="spotName" placeholder="景點名稱，例如：台北101">
+<input id="spotLat" placeholder="緯度，例如：25.0330">
+<input id="spotLng" placeholder="經度，例如：121.5654">
+<button onclick="addSpot()">新增景點</button>
+</div>
+<p class="spot-meta">不知道經緯度也可以只填景點名稱；叉子圖示仍可搜尋附近美食。</p>
+</div>
+<div class="card">
+<h2>行程景點</h2>
+<div id="spotList"></div>
+</div>
+</div>
+<script>
+let spots = [];
+function foodUrl(name, lat, lng) {
+  const keyword = "餐廳 小吃";
+  if (lat && lng) {
+    return "https://www.google.com/maps/search/" + encodeURIComponent(keyword) + "/@" + lat + "," + lng + ",17z";
+  }
+  return "https://www.google.com/maps/search/" + encodeURIComponent(keyword + " near " + name);
+}
+function addSpot() {
+  const name = document.getElementById("spotName").value.trim();
+  const lat = document.getElementById("spotLat").value.trim();
+  const lng = document.getElementById("spotLng").value.trim();
+  if (!name) { alert("請先輸入景點名稱"); return; }
+  spots.push({ name: name, lat: lat ? Number(lat) : null, lng: lng ? Number(lng) : null });
+  document.getElementById("spotName").value = "";
+  document.getElementById("spotLat").value = "";
+  document.getElementById("spotLng").value = "";
+  renderSpots();
+}
+function removeSpot(index) { spots.splice(index, 1); renderSpots(); }
+function escapeHtml(text) {
+  return String(text).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
+}
+function renderSpots() {
+  const list = document.getElementById("spotList");
+  if (spots.length === 0) { list.innerHTML = '<div class="empty">還沒有景點，先新增一個吧！</div>'; return; }
+  list.innerHTML = spots.map((spot, index) => `
+    <div class="spot-card">
+      <div class="spot-header">
+        <span class="spot-name">${index + 1}. ${escapeHtml(spot.name)}</span>
+        <a class="food-icon" href="${foodUrl(spot.name, spot.lat, spot.lng)}" target="_blank" rel="noopener" title="查看附近餐廳與小吃">🍴</a>
+        <button onclick="removeSpot(${index})">刪除</button>
+      </div>
+      <div class="spot-meta">${spot.lat && spot.lng ? "座標：" + spot.lat + ", " + spot.lng : "未提供座標，將依景點名稱搜尋附近美食"}</div>
+    </div>`).join("");
+}
+renderSpots();
+</script>
+</body>
+</html>
